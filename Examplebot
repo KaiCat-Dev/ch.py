@@ -1,0 +1,1578 @@
+############################################################################
+############################################################################
+####    Getting Started Bot                                     ############
+####    File            = ExampleBot.py                         ############    
+####    Originaly by    = TryHardHusky                          ############
+####    Edited by       = 0rX                                   ############
+####    terus di edit lagi sama gugun :v                        ############
+####    you can PM for info about making a chatango             ############
+####    bot in http://khususme.chatango.com, and you can        ############
+####    and you can also chat in :                              ############
+####            http://pemakaman.chatango.com                   ############
+####    Last update:                                            ############
+####            3.21 AM July, 5 2015 by 0rx                     ############
+############################################################################
+############################################################################
+##Importing Random Crap xD
+#here you can see that you're importing ch library
+ 
+import ch
+import random
+import sys
+import json
+import time
+import re
+import urllib
+if sys.version_info[0] > 2:
+  import urllib.request as urlreq
+else:
+  import urllib2 as urlreq
+from time import localtime, strftime
+wordtodaytime = dict()
+##Dance moves!
+#kinda useless
+
+cowner = ["thelorgorenk","perorist2","lkfcninjassr","gottestoter"]##Jangan di ubah karena lu akan melanggar UU No 2 Tentang Hak Cipta.##
+staffa = ["fapfapgangnam","arthurodragnell","orchi00","gaktauapa","sekkki","avarantine","choire","atankis","lkfcninjassr"]
+blacklist = ["abcd"]
+dancemoves = [
+  "https://lh3.googleusercontent.com/-o2m7fRghByA/VUfU-dvlyaI/AAAAAAAABjA/Kp1g9MacMUQ/w426-h507/ani-miku-dance.gif",
+  "https://33.media.tumblr.com/f6601cd09c3aac2802be01e303ad2d7d/tumblr_mzvfovUmnn1rrjtueo1_500.gif",
+]
+song = [
+  "Dirimu, dirimulah! Orang yang beriku senyum ini",
+"Jika kita bisa membuat air mata yang bersinar, itu 'kan 'jadi bintang jatuh",
+"Tanganmu t'lah terluka, tapi jangan pernah lepaskannya lagi",
+"Dari langit yang terpenuhi keinginan, hari esok 'kan segera datang",
+ 
+"Cahya yang membimbingku adalah dirimu",
+"Dan aku pun ditarik karenanya",
+"Sebelum kusadarim kita mulai sebrangi jalan itu",
+"Sekaranglah saatnya! Jikalau kita hanya bisa bersinar di sini",
+]
+ 
+bete = [
+"kunci",
+]
+pagi = [
+"ohayou oni-chan",
+]
+
+## Check Mods
+cek_mods=dict()
+
+## Nicknames
+nicks=dict()#empty list
+f=open ("nicks.txt","r")#r=read w=right
+for line in f.readlines():#loop through eachline and read each line
+    try:#try code
+        if len(line.strip())>0:#strip the whitespace checkgreater than 0
+            user , nick = json.loads(line.strip())
+            nicks[user] = json.dumps(nick)
+    except:
+        print("[Error]Can't load nick %s" % line)
+f.close()
+
+locks = []
+f = open("locks.txt", 'r')
+for name in f.readlines():
+  if len(name.strip())>0: locks.append(name.strip())
+f.close()
+
+##Whitelist##
+whitelist = []
+f = open("whitelist.txt", "r") # read-only
+for name in f.readlines():
+  if len(name.strip())>0: whitelist.append(name.strip())
+f.close()
+##Rooms##
+rooms = []
+f = open("rooms.txt", "r") #read-only
+print("[INF]Loading Rooms...")
+time.sleep(1)
+for name in f.readlines():
+  if len(name.strip())>0: rooms.append(name.strip())
+f.close()
+
+dictionary = dict() #volatile..
+f = open("definitions.txt", 'r') #read-only
+print("[INF]Loading Definitions...")
+time.sleep(1)
+for line in f.readlines():
+  try:
+    if len(line.strip())>0:
+      word, definitions, name = json.loads(line.strip())
+      dictionary[word] = json.dumps([definitions, name])
+  except:
+    print("{ERROR]Cant load Definitions: %s" % line)
+f.close()
+
+#SN TRY
+sn = dict()
+print("[INF]LOADING SN")
+try:
+  f = open('note.txt','r')
+  sn = eval(f.read())
+  f.close()
+except:pass
+
+# SN Notifs
+notif = []
+f = open("notif.txt", "r")
+print("[INF]Loading Notifs...")
+for name in f.readlines():
+  if len(name.strip())>0: notif.append(name.strip())
+f.close
+
+
+# implied command?    
+# call bot name with command after
+# call bot name with command after
+#Setting Pretty Colors
+#Font setting for your bot
+def googleSearch(args):
+  try:
+    encoded = urllib.parse.quote(args)
+    rawData = urllib.request.urlopen("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="+encoded).read().decode("utf-8")
+    jsonData = json.loads(rawData)
+    searchResults = jsonData["responseData"]["results"]
+    full = []
+    val = 1
+    for data in searchResults:
+      if "youtube" in data["url"]:
+        data["url"] = "http://www.youtube.com/watch?v="+data["url"][35:]
+      full.append("[<b>%s</b>]. %s -> %s" % (val,data["title"],data['url']))
+      val = val + 1
+    return '<br/>'.join(full).replace('https://','http://')
+  except Exception as e:
+    return str(e)
+
+def newCi():
+ headers = {}
+ headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+ req = urllib.request.Request("http://cinemaindo.com/#", headers = headers)
+ resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+ wa = re.findall('<div class="title"><a href="(.*?)"><h2>(.*?)</h2>',resp)
+ a = list()
+ q = 1
+ for link, cls, title in wa:
+     a.append("(<b>%s</b>). <b>%s</b>: %s" % (q, title, link))
+     q += 1
+ return "<br/>".join(a)
+
+def getBGTime(x):
+                    total_seconds = float(x - time.time())
+                    MIN     = 60
+                    HOUR    = MIN * 60
+                    DAY     = HOUR * 24
+                    YEAR    = DAY * 365.25
+                    years   = int( total_seconds / YEAR )      
+                    days    = int( (total_seconds % YEAR ) / DAY  )
+                    hrs     = int( ( total_seconds % DAY ) / HOUR )
+                    min = int( ( total_seconds  % HOUR ) / MIN )
+                    secs = int( total_seconds % MIN )
+                    string = ""
+                    if years > 0: string += "<font color='#00ffff'>" + str(years) + "</font> " + (years == 1 and "year" or "years" ) + ", "
+                    if len(string) > 0 or days > 0: string += "<font color='#00ffff'>" + str(days) + "</font> " + (days == 1 and "day" or "days" ) + ", "
+                    if len(string) > 0 or hrs > 0: string += "<font color='#00ffff'>" + str(hrs) + "</font> " + (hrs == 1 and "hour" or "hours" ) + ", "
+                    if len(string) > 0 or min > 0: string += "<font color='#00ffff'>" + str(min) + "</font> " + (min == 1 and "minute" or "minutes" ) + " and "
+                    string += "<font color='#00ffff'>" +  str(secs) + "</font> " + (secs == 1 and "second" or "seconds" )
+                    return string;
+ 
+def getSTime(x):
+                    total_seconds = float(time.time() - x)
+                    MIN     = 60
+                    HOUR    = MIN * 60
+                    DAY     = HOUR * 24        
+                    days    = int( total_seconds / DAY )
+                    hrs     = int( ( total_seconds % DAY ) / HOUR )
+                    min = int( ( total_seconds  % HOUR ) / MIN )
+                    secs = int( total_seconds % MIN )
+                    string = ""
+                    if days > 0: string += "<font color='#00ffff'>" + str(days) + "</font> " + (days == 1 and "day" or "days" ) + ", "
+                    if len(string) > 0 or hrs > 0: string += "<font color='#00ffff'>" + str(hrs) + "</font> " + (hrs == 1 and "hour" or "hours" ) + ", "
+                    if len(string) > 0 or min > 0: string += "<font color='#00ffff'>" + str(min) + "</font> " + (min == 1 and "minute" or "minutes" ) + " and "
+                    string += "<font color='#00ffff'>" +  str(secs) + "</font> " + (secs == 1 and "second" or "seconds", True)
+                    return string;
+
+def bgtime(x):
+        try:
+                x = user if len(x) == 0 else x
+                html = urlreq.urlopen("http://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x.lower()[0], x.lower()[1], x.lower())).read().decode()
+                inter = re.compile(r'<d>(.*?)</d>', re.IGNORECASE).search(html).group(1)
+                if int(inter) < time.time():
+                        lbgtime = getSTime(int(inter))
+                        return "that users bg ran out %s ago" % lbgtime
+                else: return "bgtime for <b>%s</b>: %s" % (x.lower(), getBGTime(int(inter)))
+        except: return 'that user never had a background, or the data was deleted'
+
+def serCi(anjoy):
+ headers = {}
+ headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+ req = urllib.request.Request("http://cinemaindo.com/?s="+anjoy+"&post_type=post", headers = headers)
+ resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','')
+ anjay = re.findall('<div class="title"><a href="(.*?)"><h2>(.*?)</h2>', resp)
+ newlist = list()
+ q = 1
+ for i, a in anjay:
+    newlist.append("%s. <b>%s</b>: %s" % (q, a, i))
+    q = q + 1
+ return "<br/>".join(serCi[0:10])
+
+def newOp():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.oploverz.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8")
+  Data = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  lolly = list()
+  anjeng = 1
+  for link, useful, title in Data:
+    lolly.append(('%s. <b>%s</b>: %s' % (anjeng, title, link)))
+    anjeng = anjeng+1
+  return "<br/>".join(lolly[0:10])
+
+def newAi():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://animeindo.id", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  res = re.findall('<div class="newepisodecon">(.+?)<div class="clearfix"></div>', resp)
+  newset = list()
+  num = 1
+  for i in res:
+    data = re.findall('<a href="(.*?)"><div class="newepisode"><span class="viewer">(.*?)</span><div class="hoverboard"><div class="title">(.*?) </div></div>', i)
+    for b, a, c in data:
+      newset.append("%s. <b>%s</b>: %s" % (num, c, b))
+      num = num + 1
+    return "<br/>".join(newset[0:10])
+
+
+def newK():
+  resp = urllib.request.urlopen("http://khususme.blogspot.co.id/").read().decode("utf-8").replace('\n','')
+  res = re.findall("<h2 class='post-title entry-title' itemprop='name'><a href=""'(.*?)'"">(.*?)</a></h2>", resp)
+  newset = list()
+  n = 1
+  for a, b in res:
+    newset.append("%s. %s: %s" % (n, b, a))
+    n = n + 1
+  return "<br/>".join(newset[0:10])
+
+def newNonton123():
+ headers = {}
+ headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+ req = urllib.request.Request("http://www.nonton123.com/", headers = headers)
+ resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+ wa = re.findall('<h2><a href="(.*?)" rel="bookmark" title="(.*?)">(.*?)</a></h2>',resp)
+ a = list()
+ q = 1
+ for link, w, title in wa:
+     a.append("(<b>%s</b>). <b>%s</b>" % (q, title))
+     q += 1
+ return "<br/>".join(a[0:10])
+
+def newAd():
+ headers = {}
+ headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+ req = urllib.request.Request("http://animemaiden.net/", headers = headers)
+ resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+ wa = re.findall('<h3 class="entry-tittle"><a href="(.*?)" rel="bookmark">(.*?)</a>',resp)
+ a = list()
+ q = 1
+ for link, clp, w, title in wa:
+     a.append("(<b>%s</b>). <b>%s</b>" % (q, title, link))
+     q += 1
+ return "<br/>".join(a[0:10])
+ 
+def serNonton123(args):
+ headers = {}
+ headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+ req = urllib.request.Request("http://www.nonton123.com/search/"+"+".join(args.split()), headers = headers)
+ resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','').replace('<u>','').replace('</u>','')
+ wa = re.findall('<h2><a href="(.*?)" rel="bookmark" title="(.*?)">(.*?)</a></h2>',resp)
+ a = list()
+ q = 1
+ for link, w, title in wa:
+     a.append("(<b>%s</b>). <b>%s</b>" % (q, title))
+     q += 1
+ return "<br/>".join(a)
+
+def newOn():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.otanimesama.com", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall("<h2 class='post-title entry-title' itemprop='name headline' style='font-size: 100%;font-weight: 600;padding-top: 5px;padding-bottom: 4px;text-transform: uppercase;' title='(.*?)'><a href='(.*?)' title='(.*?)'>(.*?)</a></h2>", resp)
+  setter = list()
+  q = 1
+  for cls, link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+
+def newHp():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://henpoi.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('Subtitle Indonesia','Sub Ina')
+  res = re.findall("<h2 class='entry-title' itemprop='name'><a href='(.*?)'>(.*?)</a>", resp)
+  newset = list()
+  n = 1
+  for a, b in res:
+    newset.append("%s. <b>%s</b>: %s" % (n, b, a))
+    n = n + 1
+  return "<br/>".join(newset[0:5])
+def serHp(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://henpoi.com/search?q="+args, headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('Subtitle Indonesia','Sub Ina')
+  res = re.findall("<h2 class='entry-title' itemprop='name'><a href='(.*?)'>(.*?)</a>", resp)
+  newset = list()
+  n = 1
+  for a, b in res:
+    newset.append("%s. <b>%s</b>: %s" % (n, b, a))
+    n = n + 1
+  return "<br/>".join(newset[0:5])
+
+def newWa():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://wardhanime.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h1><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newGa():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://gantzid.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newAs():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://animesave.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newSk():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.samehadaku.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h3 class="entry-title td-module-title"><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+def newAo():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://anisubindo.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h3 class="post-box-title"><a href="(.*?)"  title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+def newFs():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://fansatsu.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2 class="title front-view-title" itemprop="headline"><a href="(.*?)" title="(.*?)">(.*?)</a></h2>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newNk():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("https://nekonime.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h3><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newKr():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.kurogaze.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newNb():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.narutobleachlover.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h3><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newIs():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.imoutosubs.net/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newEn():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://ettonime.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def newJoi():
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://jurnalotaku.com/", headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8")
+  Data = re.findall('<a href="(.*?)" class="title"><h3><span>(.*?)</span>', resp)
+  lolly = list()
+  anjeng = 1
+  for lk, tit in Data:
+    lolly.append(('%s. <b>%s</b>: %s' % (anjeng, tit, lk)))
+    anjeng = anjeng+1
+  return "<br/>".join(lolly[0:5])
+
+def serOn(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://www.otanimesama.com/search?q="+args, headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall("<h2 class='post-title entry-title' itemprop='name headline' style='font-size: 100%;font-weight: 600;padding-top: 5px;padding-bottom: 4px;text-transform: uppercase;' title='(.*?)'><a href='(.*?)' title='(.*?)'>(.*?)</a></h2>", resp)
+  setter = list()
+  q = 1
+  for cls, link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+def serAs(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://animesave.com/?s="+args, headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+def serWa(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://wardhanime.net/search/"+args, headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def serFs(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("http://fansatsu.com/?s="+args, headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2 class="title front-view-title" itemprop="headline"><a href="(.*?)" title="(.*?)">(.*?)</a></h2>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:5])
+
+def serOp(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request('http://www.oploverz.net/?s='+args+'&post_type=post', headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def serKg(args):
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request('http://www.kurogaze.net/?s='+args+'&post_type=post', headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<h2><a href="(.*?)" title="(.*?)">(.*?)</a>', resp)
+  setter = list()
+  q = 1
+  for link, title, clp in anjay:
+    setter.append('(<b>%s</b>). <b>%s</b>: %s' % (q, title, link))
+    q += 1
+  return "<br/>".join(setter[0:10])
+
+def googleImageSearch(encoded):
+  encoded = encoded.split()
+  url = urllib.request.urlopen("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=%s" % "+".join(encoded))
+  udict = url.read().decode('utf-8')
+  jsonData = json.loads(udict)
+  searchResults = jsonData["responseData"]["results"]
+  for data in searchResults:
+    return  "%s" % (data['url'])
+
+def gis(args):
+  fargs = args.split()
+  headers = {}
+  headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
+  req = urllib.request.Request("https://www.google.co.id/search?hl=en&authuser=0&site=imghp&tbm=isch&source=hp&biw=1366&bih=623&q=" + "+".join(fargs), headers = headers)
+  resp = urllib.request.urlopen(req).read().decode("utf-8").replace('\n','').replace('\r','').replace('\t','')
+  anjay = re.findall('<a href="(.*?)"', resp)
+  setter = list()
+  la = "".join(anjay)
+  if "/imgres?imgurl=" in la[1:]:
+     a = re.findall("https://(.*?)&amp", la[15:])
+     for result in a:
+      if ".jpg" in result or ".gif" in result or ".png" in result:
+       return "http://"+"".join(random.choice([result]))
+
+def tube(args):
+   try:
+    search = args.split()
+    url = urlreq.urlopen("https://www.googleapis.com/youtube/v3/search?q=%s&part=snippet&key=AIzaSyBSnh-sIjd97_FmQVzlyGbcaYXuSt_oh84" % "+".join(search))
+    udict = url.read().decode('utf-8')
+    data = json.loads(udict)
+    rest = []
+    for f in data["items"]:
+      rest.append(f)
+ 
+    d = random.choice(rest)
+    link = "http://www.youtube.com/watch?v=" + d["id"]["videoId"]
+    videoid = d["id"]["videoId"]
+    title = d["snippet"]["title"]
+    uploader = d["snippet"]["channelTitle"]
+    descript = d["snippet"]['description']
+    count    = d["snippet"]["publishedAt"]
+    return "<br/><br/><b>%s</b>:<br/> <b>%s</b><br/><b>Upload by</b>: %s <br/><b>Description</b>: <i>%s</i>" % (title, link, uploader, descript)
+   except Exception as e:
+    return str(e)
+
+def sntonick(username):
+    user = username.lower()
+    if user in nicks:
+        nick = json.loads(nicks[user])
+        return nick
+    else:
+        return user
+
+##### Pars Def
+def pars(args):
+          args=args.lower()
+          userlist = roomUsers()
+          for name in userlist:
+            if args in name:return name
+class TestBot(ch.RoomManager):
+  def onInit(self):
+    self.setNameColor("33CCFF")
+    self.setFontColor("009900")
+    self.setFontFace("Arial")
+    self.setFontSize(14)
+    self.enableBg()
+    self.enableRecording()
+##### Pars Def
+  def pars(args):
+          args=args.lower()
+          userlist = roomUsers()
+          for name in userlist:
+            if args in name:return name
+  def getAccess(self, user):
+    if user.name in cowner: return 4 # owner-JP
+    elif user.name in cowner: return 3 # masters
+##Connecting Crap
+#This is what will be printed on your python console when event called
+ 
+  def onConnect(self, room):
+    print("Connected")
+ 
+  def onReconnect(self, room):
+    print("Reconnected")
+ 
+  def onDisconnect(self, room):
+    print("Disconnected")
+ 
+ 
+##Ignore this, you dont need to worry about this
+#Well, you can actually take a little time to look at it and learn something
+  def onMessage(self, room, user, message):
+  #### Comenzi fara prefix
+   if message.body.startswith("test https://media.giphy.com/media/VUC9YdLSnKuJy/giphy.gif"):
+     room.message("Test agree")
+   if message.body.startswith("Alvion"):
+     room.message("Whut ? https://media.giphy.com/media/E2TzDxzrWXLDG/giphy.gif")
+   if message.body.startswith("off"):
+     room.message("jangan balik lagi yaa  !")
+   if message.body.startswith("vion"):
+     if user.name in cowner:
+      room.message('<f x12FF0000="Arial">Y<f x12FF3600="Arial">e<f x12FF6C00="Arial">a<f x12FFA200="Arial">,<f x12FFD800="Arial"> <f x12C9FF00="Arial">M<f x1293FF00="Arial">a<f x125DFF00="Arial">s<f x1227FF00="Arial">t<f x1200FF36="Arial">e<f x1200FF6C="Arial">r<f x1200FFA2="Arial"> <f x1200FFD8="Arial">!<f x1200C9FF="Arial">? https://media.giphy.com/media/VUC9YdLSnKuJy/giphy.gif', True)
+     else:
+      room.message("What's up,"+ sntonick(user.name)+"?", True)
+   if message.body.startswith("afk"):
+     if user.name == "lkFcninjasJr":
+      room.message("See You Soon  "+sntonick(user.name), True)
+     else:
+      room.message("See You Soon,"+ sntonick(user.name)+".", True)
+   if message.body.startswith("brb"):
+     if user.name == "lkfcninjassr":
+      room.message("Bye, lkfc")
+     else:
+      room.message("Bye,"+ sntonick(user.name)+".", True)
+   if message.body.startswith("back"):
+     if user.name == "lkfcninjassr":
+      room.message("Welcome back,")
+     else:
+      room.message("Ngapain Lu Balik Lagi Coek","Well Come Back"+ sntonick(user.name)+".", True)
+   try:
+    startlag = time.clock()
+    if room.getLevel(self.user) > 0:
+      print(user.name, message.body)
+    else:
+      print(user.name, message.body)
+    if self.user == user: return
+    if message.body[0] == "-":   ##Here is the Prefix part
+      data = message.body[1:].split(" ", 1)
+      if len(data) > 1:
+        cmd, args = data[0], data[1]
+      else:
+        cmd, args = data[0], ""
+ 
+      if user.name not in whitelist: return
+      
+      if cmd == "lkfc" or cmd == "ninjas" or cmd == "sr":
+          ret = eval(args)
+          if ret == None:
+            room.message("Terminat.")
+            return
+          room.message(str(ret))
+##COMMANDS!
+#Setting up commands for yer bot
+ #commands section
+#### Invite
+      elif cmd == "wl":
+        if args in whitelist:
+            room.message(args+" is already registered",True);return
+        elif args not in room.usernames:
+          if args == "": return
+          room.message("I don't see "+args+" here >,> ",True);return
+        else:
+            whitelist.append(args)
+            room.message(args+" can use me now. :o",True)
+        f = open("whitelist.txt", "w")
+        f.write("\n".join(whitelist))
+        f.close()
+
+      elif (cmd == "mynick") :
+          user=user.name.lower()
+          if user in nicks :
+            nick = json.loads(nicks[user])
+            room.message(user+" is nicked : "+nick,True)
+          else:
+            room.message("You have no nickname yet in my nick[] database.", True)
+
+      elif cmd == "nick":
+        ## if user.name in reg or user.name in friends or user.name in trusted or user.name in owners:
+            if args:
+                nick = args # disini letak perbedaannya...
+                user = user.name # mungkin juga disini
+                nicks[user] = json.dumps(nick)
+                room.message(user +' I will now call you '+str(args)+'', True)
+                try: # ini skrip untuk auto-save ...
+                    print("[SAVING] NICKS...")
+                    f = open("nicks.txt", "w")
+                    for user in nicks:
+                        nick = json.loads(nicks[user])
+                        f.write(json.dumps([user,nick]) + "\n")
+                except:
+                       room.message("Failed To Make New Nick..");return
+            else:
+              room.message('Type ;nick yournick to adding new nickname', True)
+
+      if cmd =="nas":
+                  sss = args
+                  resp = urlreq.urlopen("http://nontonanime.web.id/?s="+sss+"&post_type=anime").read().decode("utf-8")
+                  data = re.findall('<h2><a href="(.*?)">(.*?)</a>', resp)
+                  newset = list()
+                  num = 1
+                  for link, title in data:
+                    newset.append(('[%s] %s: %s') % (num, title,link))
+                    num = num+1
+                  room.message("Search Result "+args+" on nontonanime.web.id: <br/>"+"<br/>".join(newset),True)
+
+
+      if cmd =="afsr":
+                  sss = args
+                  resp = urlreq.urlopen("http://animefans.id/?s="+sss+"&post_type=anime").read().decode("utf-8")
+                  data = re.findall('<h2><a href="(.*?)">(.*?)</a>', resp)
+                  newset = list()
+                  num = 1
+                  for link, title in data:
+                    newset.append(('[%s] %s: %s') % (num, title,link))
+                    num = num+1
+                  room.message("Search Result "+args+" on animefans.id: <br/>"+"<br/>".join(newset),True)      
+
+      if cmd == "ak":
+                  sss = args
+                  data = urlreq.Request("http://animeku.tv/?s=", headers = {'User-Agent': 'Mozilla/5.0'})
+                  asu = urlreq.urlopen(data)
+                  udict = asu.read().decode('utf-8')
+                  data = re.findall('<h2><a href="(.*?)">(.*?)</a>', udict)
+                  newset = list()
+                  num = 1
+                  for link, title in data:
+                      newset.append(("(%s) <b>%s</b> - %s") % (num, title, link))
+                      num = num+1
+                  room.message("<br/>New episode on Animeku.tv:<br/>"+"<br/>".join(newset[0:10]),True)
+
+                ## Animeku.tv Search ##
+      if cmd == "aks":
+                  sss = args
+                  data = urlreq.Request("http://animeku.tv/?s="+sss+"&post_type=anime", headers = {'User-Agent': 'Mozilla/5.0'})
+                  asu = urlreq.urlopen(data)
+                  udict = asu.read().decode('utf-8')
+                  data = re.findall('<h2><a href="(.*?)">(.*?)</a>', udict)
+                  newset = list()
+                  num = 1
+                  for link, title in data:
+                      newset.append(("(%s) <b>%s</b> - %s") % (num, title, link))
+                      num = num+1
+                  room.message("<br/>"+"Result for <b>"+args+"</b>:<br/>"+"<br/>".join(newset[0:10]),True) 
+
+
+      if cmd =="afnew":
+                 resp = urlreq.urlopen("http://animefans.id/").read().decode("utf-8")
+                 data = re.findall('<h2><a href="(.*?)">(.*?)</a>', resp)
+                 newset = list()
+                 num = 1
+                 for link, title in data:
+                   newset.append(("(%s) <b>%s</b> - %s") % (num, title, link))
+                   num = num+1
+                 room.message("New Update"+args+" on Animefans.id: <br/>"+"<br/>".join(newset[0:5]),True)
+
+      if cmd == "na":
+                 sss = args
+                 data = urlreq.urlopen("http://nontonanime.web.id/?s=")
+                 udict = data.read().decode("utf-8")
+                 data = re.findall('<h2><a href="(.*?)">(.*?)</a>', udict)
+                 newset = list()
+                 num = 1
+                 for link, title in data:
+                    newset.append(("(%s) <b>%s</b> - %s") % (num, title, link))
+                    num = num+1
+                 room.message("New Update"+args+" on NontonAnime.web.id:<br/>"+"<br/>".join(newset[0:10]),True)
+
+      elif cmd =="staff" or cmd =="ranker":
+          x = ", ".join(cowner)
+          z = len(cowner)
+          y = ", ".join(staffa)
+          o = len(staffa)
+          room.message('<f x1299ffff="Arial"><b>Owner</b></f>: '+str(x).title()+" (<b>"+str(z)+"</b>)"+"<br/><f x11ff0000='Arial'><b>Staffa</b></f>: "+str(y)+" (<b>"+str(o)+"</b>"+"<br/>)",True)
+
+
+
+
+     #### Google Search
+      elif cmd == "gws" or cmd == "Gws" or cmd == "Google Search":
+          if len(args) > 0:
+            room.rawMessage("<a href='http://lmgtfy.com/?q=" + args + "' target='_blank'><u>" + args + '</u></a>' )
+
+      elif cmd == "youtube" or cmd == "yt":
+        if args:
+          room.message(tube(args),True)
+        else:
+          room.message("Please type what you want to watch in Youtube..",True)  
+      if cmd == "cmds":
+        room.message("<f xFF0000='1'>Vion Command :  <f x3333FF='1'>webmovie, <f x3366FF='1'>webanime , <f x666600='1'> bgtime, inbox, truth/dare, fpix , Del, userlist , gis , gs  , nick , mynick , say , mch , myip , ban , unban ,sbg , fax , bg , prof , wake , sleep , ranker , mods , lock , unlock , leave , join , isdown , sn , cs , rn , df , mydf , find , lm , bc , ig , pm , wt , save , banlist , yt", True)
+      if cmd == "webanime":
+        room.message("<f x12F00='1'>Web Anime For Now:<f x12334433='1'><br/>1. Animeku.tv : ak(new update on animeku.tv) , aks(animeku.tv search).<br/>2. Animeindo.id : ainew(new update on animeindo.id).<br/>3. Nontonanime.web.id : na(new update on nontonanime.web.id) , nas(nontonanime.web.id search). <br/>4. Animefans.id : afnew(new update on animefans.id) , afsr(animefans.id search).<br/>5. Imoutosubs.com : isnew(new update on imoutosubs).<br/>6. Narutobleachlover.net : nbnew(new update on narutobleachlover).<br/>7. Kurogoze.net : krnew(new update on kurogaze) , krsr(kurogaze search).<br/>8. Nekonime.com : nknew(new update on nekonime).<br/>9. Animesave.com : asnew(new update on animesave.com) , assr(animesave.com search).<br/>10. Wardhanime.net : wanew(new update on wardhanime) , wasr(wardhanime search).<br/>11. Otanimesama : otnew(new update on otanimesama) , otsr(otanime search).<br/>12. Oploverz.net : opnew(new update on oploverz) , opsr(oploverz search).<br/>13. Fasatsu.com : fsnew(new update on fansatsu) , fssr(search fansatsu movie or anime)", True)
+
+      if cmd == "webmovie":
+        room.message("<f x00CCCC='1'>Web Movie For Now:<f x3366FF='1'><br/>1. Nonton123: n123(new update on nonton123) , n123sr(nonton123 Search).<br/>2. Cinemaindo: ci(top 10 movie in cinemaindo) , ms(cinemaindo search) ", True)
+
+      if cmd == "invite" or cmd == "Invite":
+        if len (args) > 0:
+            self.pm.message(ch.RoomManager(args),"%s You have a group invite by ! http://%s.chatango.com ." %(owners[0],room.name))
+            room.message("Invite on progress %s in Access group. :)" % args)
+        else:
+            room.message("Sry have problem. :3")
+
+
+    ### User List
+      elif cmd == "ul" or cmd == "userList" or cmd == "User List" or cmd == "User list":
+         if args == "":
+          usrs = []
+          gay = []
+          finale = []
+          prop = 0
+          prop = prop + len(room._userlist) - 1
+          for i in room._userlist:
+            i = str(i)
+            usrs.append(i)
+          while prop >= 0:
+            j = usrs[prop].replace("<User: ", "")
+            i = j.replace(">", "")
+            gay.append(i)
+            prop = prop - 1
+          for i in gay:
+            if i not in finale:
+              finale.append(i)
+          if len(finale) > 40:
+            room.message("<font color='#9999FF'><b>40</b></font> of <b>%s</b> users in this room: %s"% (len(finale), ", ".join(finale[:41])), True)
+          if len(finale) <=40 :
+            room.message("<f xFF0000='1'>Current <b>%s</b><f x000099='1'>users of this room: <f x3366FF='1'>%s"% (len(finale),", ".join(finale)), True)
+         if args != "":
+           if args not in self.roomnames:
+             room.message("I'm not there.")
+             return
+           users = getParticipant(str(args))
+           if len(users) > 40:
+             room.message("<font color='#9999FF'><b>40</b></font> of <b>%s</b> current users in <b>%s</b>: %s"% (len(users), args.title(), ", ".join(users[:41])), True)
+           if len(users) <=40:
+             room.message("<f xFF0000='1'>Current <b>%s</b> <f x000099='1'>users in <f x3366FF='1'><b>%s</b>: %s"% (len(users), args.title(), ", ".join(users)), True)
+##You may want/need to evaluate something about your bot.
+      if cmd == "ev" or cmd == "eval" or cmd == "e" and user.name in cowner:
+          ret = eval(args)
+          if ret == None:
+            room.message("Done.")
+            return
+          room.message(str(ret))
+      elif cmd == "myrank":
+        if user.name in cowner:room.message(sntonick(user.name)+", your rank is Owner[<font color='#FFA600'>★★★</font>]: <b>3</b>",True)
+        elif user.name in staffa: room.message(sntonick(user.name)+", your rank is Master[<font color='#FF0066'>★★</font>]: <b>2</b>",True)
+        elif user.name in whitelist: room.message(sntonick(user.name)+", your rank is citezen[<font color='#3399FF'>★</font>]: <b>1</b>",True)
+        else: room.message(sntonick(user.name)+",They Have No Rank ^^ ..",True)
+ 
+        ##Say
+        #Make your bot say what you want
+      if cmd == "say":
+       if args:
+        room.message(args)
+       else:
+        room.message(":|")
+
+     ### MultiChat
+      elif cmd == "multichat" or cmd == "mc":
+          if args == ("Biar Tamvan Tulis *mc nama room yg pengen di multichat in "):
+            room.message("")
+          else:
+            room.message("http://ws-hoax.rhcloud.com/html5/?"+args)
+      #### MyIp
+      elif cmd =="myip" or cmd == "MyIp" or cmd == "MyIP" or cmd == "My IP Adress":
+        try:
+         room.message("Your I.P. address is : "+message.ip)
+        except:
+         room.message("IP lookup failed , bot is not a mod in this chat.")
+      elif cmd == "rooms":
+          j = list()
+          for i in self.roomnames:
+            j.append("<b>"+i+"</b>"+"("+str(self.getRoom(i).usercount)+")")
+          room.message("|| <f x1233FFFF='1'>I'am <f x12F00='1'>Online <f x12334433='1'>in: "+", ".join(j)+" ||", True)
+     ##### Set Background
+      if cmd== "sbg" or cmd == "Sbg" or cmd == "Set Background":
+            if user.name in cowner:
+              if len(args) > 0:
+                  if args == "On":
+                    room.setBgMode(1)
+                    room.message("Background On")
+                    return
+                  if args == "Off":
+                    room.setBgMode(0)
+                    room.message("Background Off")
+
+      if cmd == "opnew": room.message(newOp(), True) 
+      if cmd == "otnew": room.message(newOn(), True)
+      if cmd == "otsr": room.message(serOn(args), True)
+      if cmd == "wanew": room.message(newWa(), True)
+      if cmd == "gannew": room.message(newGa(), True)
+      if cmd == "sknew": room.message(newSk(), True)
+      if cmd == "asnew": room.message(newAs(), True)
+      if cmd == "annew": room.message(newAn(), True)
+      if cmd == "aonew": room.message(newAo(), True)
+      if cmd == "nknew": room.message(newNk(), True)
+      if cmd == "krnew": room.message(newKr(), True)
+      if cmd == "nbnew": room.message(newNb(), True)
+      if cmd == "wasr": room.message(serWa(args), True)
+      if cmd == "joinew": room.message(newJoi(), True)
+      if cmd == "ennew": room.message(newEn(), True)
+      if cmd == "gs": room.message(googleSearch(args), True)
+      if cmd == "gis": room.message(gis(args), True)
+      if cmd == "ainew": room.message(newAi(), True)
+      if cmd == "fsnew": room.message(newFs(), True)
+      if cmd == "fssr": room.message(serFs(args), True)
+      if cmd == "bgtime": room.message(bgtime(args), True)
+      if cmd == "n123": room.message(newNonton123(), True)
+      if cmd == "n123sr": room.message(serNonton123(args), True)
+      if cmd == "mbnew": room.message(newMs(), True)
+      if cmd == "opsr": room.message(serOp(args), True)
+      if cmd == "krsr": room.message(serKg(args), True)
+      if cmd == "assr": room.message(serAs(args), True)
+
+      elif cmd == "ci":
+             try:
+              room.message("Newupdate on CinemaIndo.com: <br/>%s" % (newCi()), True)
+             except: room.message("Fail accessing the web.")
+      elif cmd == "ms":
+             try:
+              room.message("Search result "+args+" on CinemaIndo.com: <br/>%s" % (serCi(args)), True)
+             except: room.message("Not found, I think.")
+
+      if cmd == "lock":
+        if user.name in blacklist:
+          room.message("You can't do that.. ;D")
+          return
+        if args in locks:
+          room.message("It's already locked.. ;D")
+          return
+        if args in self.roomnames:
+          if user.name in cowner or user.name in staffa:
+            locks.append(args)
+            room.message("Locked: <b>%s</b>" % args, True)
+          else: room.message("Only rank 3 gets to lock rooms remotely")
+        if args == "":
+          if room.name in locks:
+            room.message("It's already locked.. ;D")
+            return
+          locks.append(room.name)
+          room.message("Locked: <b>%s</b>" % room.name, True)
+        if args not in self.roomnames:
+          if args == "": return
+          room.message("I haven't joined such room")
+          return
+      if cmd == "unlock":
+        if user.name in blacklist: return
+        if args in self.roomnames:
+          if args in locks:
+            if user.name in cowner or user.name in staffa:
+              locks.remove(args)
+              room.message("Unlocked: <b>%s</b> :D" % args, True)
+            else: room.message("")
+          else:
+            room.message("It's not even locked.. ;D")
+            return
+        if args == "":
+          if room.name in locks:
+            locks.remove(room.name)
+            room.message("Unlocked: <b>%s</b> :D" % room.name, True)
+          else:
+            room.message("It's not even locked.. ;D")
+            return
+        if args not in self.roomnames:
+          if args == "": return
+          room.message("I'm not in that room.. :P")
+          return
+
+      if message.body.lower() == "*lockstatus":
+            roomlock = "No"
+            if room.name in locks:
+              locks.remove(room.name)
+              roomlock = "Yes"
+              self.setTimeout(3, locks.append(room.name), True)
+              room.message("This is my lockstatus: <br/>[Roomlocked]: <b>"+roomlock, True)
+ 
+    
+      if cmd == "truth" and self.getAccess(user) >= 1:
+        room.message(random.choice(["Kejahatan apa yang pernah kau lakukan?","Sebutkan kebohongan yang paling buruk yang pernah kau lakukan!","Apa sifat yang menjengkelkan yang pernah kau lakukan!","Apa hal 'aneh' yang pernah kau lakukan?","Apa salah satu jimatmu?","Siapa yang akan kamu kencani diantara orang orang di room ini?","Beritahu kami fantasi rahasiamu!","Apa perubahan besar pada dirimu?","Pakaian apa yang paling cocok buat kamu dan katakan alasannya!","Apakah kau mau mengencani "+random.choice(room.usernames)+"?","Tipe video porno apa yang paling kau sukai?","Kelakuan apa yang paling liar yang pernah kau lakukan semasa hidupmu selama ini?","Apa yang paling bisa membuatmu ngompol? *lol*","Beritahu kami pengalaman sexual terliar yang pernah kau alami!","Beritahu kami rahasia terbesar dan tergelapmu!","Beritahu kami apa yang paling lucu dari pengalaman sexual kamu!","Apakah kamu menyukai seseorang yang berada di room ini sekarang? Dan katakan namanya! :v","Apa yang paling kau takuti?","Jika kau punya kesempatan untuk berubah menjadi orang yang ada di room ini sekarang, siapakah yang kau pilih?","Jika kau menjadi orang terakhir dan kamu berkesempatan untuk mengajak orang yang berada di room ini, siapakah yang kau pilih?","Apakah perubahan negatif terbesarmu?","Apa sifat yang menjengkelkan dari dirimu?","Apa sifat yang menjengkelkan dari "+random.choice(room.usernames)+"?","Jika kau memiliki 24 jam untuk hidup, apa yang akan kau lakukan?","Apa kesenanganmu yang salah? Contohnya: "+random.choice(room.usernames)+" suka fap di depan umum.. :v","Menurutmu, kamu memiliki sisi menarik dari segi apa?","Apa yang kau lakukan jika kamu berada di kamar mandi bareng "+random.choice(room.usernames)+" selama 10 menit?","Siapa yang kau cintai?","Beritahu kami tentang ciuman pertamamu.","Beritahu kami tentang pengalaman sexual pertamamu.","Pengalaman apa yang paling kau sesali?","Jika kau bisa mengulang sesuatu dalam hidupmu, apakah yang akan kau ubah? Dan bagaimana kau merubahnya?","Jika kau dapat menghabiskan waktu bersama seseorang, maka siapakah orang itu?","Apakah kau pernah diselingkuhin? :|","Cara apa yang paling buruk untuk menyakitimu, secara fisik, mental, dan emosional?","Siapakah sahabatmu?","Jika kau bisa merubah 3 hal dalam dirimu, apakah yang akan kau ubah?","Siapa menurutmu orang yang buruk?","Apakah aku kawaii~?","Apakah kau alien? O.o","Katakan padaku kelakuan terburuk yang pernah kau lakukan!","Siapa orang favorit untuk berada di sisimu?","Apakah kau cyber?","Apa kau pernah fap fap?","Kalau kamu fap, kau membayangkan siapa?","Apakah kau pernah membaca hentai?","Apa kau pernah nonton hentai?","Apa anime kesukaanmu?","Apakah kau pernah nonton Oni-chichi?","Apa kau pernah nonton Love Stage?","Apa kau pernah nonton Boku no pico?","Apa kau pernah nonton aki sora?","Apa pendapatmu tentang room "+room.name+"?","Apa kau melihat swiper?? O.o Dimana?? Aku tidak melihatnya 8)","Bagaimana pendapatmu tentang Dora The Explorer?","Lelucon apa yang paling membuatmu ketawa gelinding gelinding? *lol* (: :) (: :) (: :v","Apa kau merasa dirimu ganteng?","Apa kau merasa dirimu maco?","Apa kau merasa dirimu cantik??","Apa kau merasa dirimu jelek?","Apa kau merasa dirimu tak berguna?","Apa kau merasa tidak dibutuhkan?","Bagaimana pendapatmu tentang zionisme?","Bagaimana pendapatmu tentang Depopulation Program?","Jika kau ditawarkan untuk menjadi anggota zionis, maka apa yang akan kau katakan?","Jika kau ditawarkan untuk membela Palestina, dan semua biaya ditanggung sama orang itu, apa kau rela untuk membela Palestina?","Apa kau jones? Kalau iya, sudah berapa lama kau menjadi jones?","Bagaimana menurutmu tentang orang orang di "+room.name+"?"]))
+ 
+      if cmd == "dare" and self.getAccess(user) >= 1:
+        room.message(random.choice(["Berikan "+random.choice(room.usernames)+", goyang apa saja! :v",user.name.capitalize()+", minta di rape ama "+random.choice(room.usernames)+".","Rape "+random.choice(room.usernames)+", dan pastikan dia sexy ;)","Ku tantang kau untuk mengirimkan foto aslimu ke chat!! :v","Ciumn orang yang kamu sukai di "+room.name+"!!!","Invite 10 people ke "+room.name+"!!","Kiss "+random.choice(room.usernames),"Gosok "+random.choice(room.usernames),"Katakan pada orang yang kamu sukai bahwa kamu akan selalu mencintainya *h*","Cium "+random.choice(room.usernames)+" dan jilat lidahnya..","Katakan pada "+random.choice(room.user.name)+" bahwa kau menyukainya :v","Beritahu kami siapa yang mengidolakanmu!! 8)","Duduk di pangkuan "+random.choice(room.usernames)+"! :v, selama permainan berlangsung.","Add facebooknya "+random.choice(user.name)+"! 8)","Bikin status alay di efbeh!! :v","Joget sesar! :v","Nonton Boku no Pico!!","Nonton Love Stage!","Nonton Aki sora!","Nonton Oni-chichi!","Nonton discipline!","Nonton Yosuga no Sora!!","Nonton Free!","Jihad ke Palestine!! 8)","Bah! Gua lupa pengen ngasih dare apa... *bored* skip aja dah...","Cium orang gila di deket rumahmu :v"]))
+ 
+
+      if cmd.lower() == "fpix" and len (args) > 0:
+        if self.getAccess(user) >= 1:
+            name=args
+            room.message("http://fp.chatango.com/profileimg/"+name[:1]+"/"+name[1:2]+"/"+name+"/full.jpg")
+   ###### Fax
+      if cmd == "fax" or cmd == "Fax":
+        try:
+          name, body = args.split(" ", 1)
+          l = "http://ch.besaba.com/mty.htm?"+room.name+"!"
+          if name in self.roomnames :
+            self.getRoom(name).message('[<font color="#6699CC"><b>Message</b></font> - %s ] in <a href=\"%s" target=\"_blank\"><u>%s</u></a> : <font color="#66FFFF"><i> %s <i></font>' % (sntonick(user.name), l, room.name, body),True)
+            room.message("Sent")
+          else:
+            room.message("I haven't joined that room")
+        except:room.message("error")
+    #### Profile
+      elif cmd == "prof" or cmd == "profile" or cmd == "Prof" or cmd == "Profile":
+        try:
+          args=args.lower()
+          stuff=str(urlreq.urlopen("http://"+args+".chatango.com").read().decode("utf-8"))
+          crap, age = stuff.split('<span class="profile_text"><strong>Age:</strong></span></td><td><span class="profile_text">', 1)
+          age, crap = age.split('<br /></span>', 1)
+          crap, gender = stuff.split('<span class="profile_text"><strong>Gender:</strong></span></td><td><span class="profile_text">', 1)
+          gender, crap = gender.split(' <br /></span>', 1)
+          if gender == 'M':
+              gender = 'Male'
+          elif gender == 'F':
+              gender = 'Female'
+          else:
+              gender = '?'
+          crap, location = stuff.split('<span class="profile_text"><strong>Location:</strong></span></td><td><span class="profile_text">', 1)
+          location, crap = location.split(' <br /></span>', 1)
+          crap,mini=stuff.split("<span class=\"profile_text\"><!-- google_ad_section_start -->",1)
+          mini,crap=mini.split("<!-- google_ad_section_end --></span>",1)
+          mini=mini.replace("<img","<!")
+          picture = '<a href="http://fp.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/full.jpg" style="z-index:59" target="_blank">http://fp.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/full.jpg</a>'
+          prodata = '<br/> <a href="http://chatango.com/fullpix?' + args + '" target="_blank">' + picture + '<br/><br/> Age: '+ age + ' <br/> Gender: ' + gender +  ' <br/> Location: ' +  location + '' '<br/> <a href="http://' + args + '.chatango.com" target="_blank"><u>Chat With User</u></a> ' "<br/><br/> "+ mini
+          room.message(prodata,True)
+        except:
+          room.message(""+args+" doesn't exist o.o ")
+      #### Bg
+      if cmd =="bg":
+        try:
+          args=args.lower()
+          picture = '<a href="http://st.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/msgbg.jpg" style="z-index:59" target="_blank">http://fp.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/msgbg.jpg</a>'
+          prodata = '<br/>'+picture
+          room.message(prodata,True)
+        except:
+          room.message(""+args+" doesn't exist o.o ")
+      if cmd == "join":
+         if args not in self.roomnames:
+                room.message("<f x12F00='1'>In proggress <f x1233FFFF='1'>go to <f x12F00='1'>room :<f x12FFCC00='1'>  <b>%s</b>*" % args, True)
+                self.joinRoom(args)
+                room.message("<f x1233FFFF='1'>I has <f x12F00='1'>be in <f x12334433='1'>room :<f x12FFCC00='1'> "+args, True)
+         else: room.message("<f x123333FF='1'>Sorry, <f x12FFCC00='1'>is seems <f x1233FFFF='1'> only rank 3,4,5 <f x12FFCC00='1'>can do this :)",True)
+
+     ### Wake
+      if cmd == "wake" or cmd == "Wake":
+        if user.name in cowner: return
+        room.message("Alvionbot este in Wake mode")
+        lockdown = False
+     ### Sleep
+      if cmd == "sleep" or cmd == "Sleep":
+        if user.name in cowner: return
+        room.message("Alvionvot este in Sleep mode")
+        lockdown = True
+            #### Join
+      elif cmd == "join" or cmd == "Join":
+          if user.name in cowner:  
+                room.message("*yaa vion join ke <b>%s</b>*" % args, True)
+                self.joinRoom(args)
+          else:
+                room.message("Maaf Hanya Owner Dan Staff Yang Bisa :|")
+
+      elif cmd == "leave":
+          if user.name in cowner: 
+                room.message("<f x12F00='1'>In Process <f x12FFCC00='1'>Leaving <f x12334433='1'>room :<f x123333FF='1'>  <b>%s</b>" % args, True)
+                self.leaveRoom(args)
+                self.leaveRoom(room.name)
+          else: room.message("<f x12F00='1'>Sorry, <f x1233FFFF='1'>just <f x12339999='1'>rank 3,4,5 <f x12334433='1'>can do <f x12000='1'>This .. :)",True)  
+     #### Dead
+      elif cmd == "dead" or cmd == "Dead" and user.name in cowner:
+        if user.name in cowner:
+          room.message("Shutting down ...")
+          self.setTimeout(4, self.stop, )
+          self.stop()
+        else:
+          room.message("Ce ??? *lol*")
+
+      elif cmd == "chazerxjr":
+        jawab = ["bot system kaneki v1.0 siap membantu"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "ramal":
+        jawab = ["hari ini anda beruntung","hari ini anda sial","hari ini anda akan bertemu jodoh anda :D","hari ini anda akan ketemu mantan anda","jones ya? minta di ramal2"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "fight":
+        jawab = ["http://data2.whicdn.com/images/156069110/large.gif"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "help":
+        jawab = ["Deal"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "afk":
+        jawab = ["terimakasih untuk chat nya hari ini"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "crunch":
+        jawab = ["https://31.media.tumblr.com/50dcec4f797eb86ea483558695c874f1/tumblr_nqru66BNYc1u8lwqgo1_500.gif"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "nja":
+        jawab = ["bye2"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "coeghd":
+        jawab = ["anda kenapa?"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == ":v":
+        jawab = ["emoticon dewa"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "lebaran":
+        jawab = ["minal aidzin wal faizin kk"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "gue tamvan gak ?":
+        jawab = ["kaga","tamvan","jelek","biasa aja"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "hmm":
+        jawab = ["maho detcted"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "konbanwa":
+        jawab = ["tidur sana jangan ngalong :v"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "naruto":
+        jawab = ["adalah anime yang selalu flash back"]
+        room.message(random.choice(jawab)+" @"+user.name)
+      elif cmd == "bnp":
+        jawab = ["erorr forbidden access denied"]
+        room.message(random.choice(jawab)+" @"+user.name)
+        ##Random User
+        #What's this for ? this one cmd will make your boy say the name of a random user in a room
+      if cmd == "randomuser":
+        room.message(random.choice(room.usernames))
+ 
+        ##Check Level
+        #This one cmd is tho make your bot say your mod level in the current room you're in
+      elif cmd == "mylvl":
+        room.message("Your mod level: %i" %(room.getLevel(user)))
+ 
+        ##List Mods
+        #List of Mods and Owner name in the current room you're in
+      elif cmd == "mods" or cmd == "Mods":
+        args = args.lower()
+        if not args:
+           room.message("<br/><font color='#9999FF'><b>Owner</b></font>:  <u><b>"+(room.ownername)+"</b></u>  <br/><font color='#9999FF'><b>Mods</b></font>: "+", ".join(room.modnames), True)
+           return
+        if args in self.roomnames:
+           moda = self.getRoom(args).modname
+           own = self.getRoom(args).ownername
+           room.message("<br/><font color='#9999FF'><b>Owner</b></font>:  <b><u>"+(own)+"</u></b>  <br/><font color='#9999FF'><b>Mods</b></font>:  "+",  ".join(moda), True)
+        else:
+           self.joinRoom(args)
+           cek_mods[user.name] = json.dumps([room.name,args])
+
+         #### Broadcast
+      if cmd == "broadcast" or cmd == "bc" or cmd == "Shout" or cmd == "shout" or cmd == "Bc" or cmd == "Bc":
+            if user.name in cowner or user.name in staffa: #Only rank 4+ can Broadcast a Message
+                for room in self.rooms:
+                  if args == "": return
+                  else:
+                    room.message("Broadcast de la - "+user.name + ": "+args, True)
+            else:
+                room.message("[<b>%s</b>] Only Admins Members are allowed" % "ERROR", True)
+      #### Is Down
+      if cmd=="isdown":
+       if len(args)>0:
+        for line in urlreq.urlopen("http://www.downforeveryoneorjustme.com/"+args):
+          decoder=line.decode("UTF-8")
+          if "It's just you." in decoder:
+            room.message(args+' <f x12FF0000="Arial">S<f x12FF2F00="Arial">h<f x12FF5E00="Arial">o<f x12FF8D00="Arial">u<f x12FFBC00="Arial">l<f x12FFEB00="Arial">d<f x12D0FF00="Arial"> <f x12A1FF00="Arial">b<f x1272FF00="Arial">e<f x1243FF00="Arial"> <f x1214FF00="Arial">u<f x1200FF2F="Arial">p<f x1200FF5E="Arial">.<f x1200FF8D="Arial">.<f x1200FFBC="Arial">.<f x1200FFEB="Arial">', True)
+            break
+          if "It's not just you!" in decoder:
+            room.message(args+' <f x12FF0000="Arial">L<f x12FF2800="Arial">o<f x12FF5000="Arial">o<f x12FF7800="Arial">k<f x12FFA000="Arial">s<f x12FFC800="Arial"> <f x12FFF000="Arial">d<f x12D7FF00="Arial">o<f x12AFFF00="Arial">w<f x1287FF00="Arial">n<f x125FFF00="Arial"> <f x1237FF00="Arial">f<f x120FFF00="Arial">o<f x1200FF28="Arial">r<f x1200FF50="Arial"> <f x1200FF78="Arial">n<f x1200FFA0="Arial">o<f x1200FFC8="Arial">w<f x1200FFF0="Arial">', True)
+            break
+          if "doesn't look like a site on the interwho." in decoder:
+            room.message(args+" isn't a valid url.")
+            break
+          else:
+            continue
+                # Ban List
+      if cmd == "banlist":
+        room.message("The banlist is: "+str(room.banlist))
+   
+           ##ForceSave
+      if cmd == "save":
+          time.sleep(1)
+          print("[SAVE] SAVING DEFINITIONS...")
+          f = open("definitions.txt", "w")
+          for word in dictionary:
+              definition, name = json.loads(dictionary[word])
+              f.write(json.dumps([word, definition, name])+"\n")
+          if user.name.lower() in cowner or user.name in cowner:
+              room.message("Se Nghee...(Force Mode!)...")
+          else:
+              room.message("Se Ngehe...(Normal Mode!)")
+          f.close()
+     
+
+      elif cmd == "mydf" or cmd =="mylistdef":
+          arr = []
+          for i in dictionary:
+            if user.name in dictionary[i]:
+              arr.append(i)
+          if len(arr) > 0:
+            room.message('<f x12FF0000="Arial">Y<f x12FF2D00="Arial">o<f x12FF5A00="Arial">u<f x12FF8700="Arial"> <f x12FFB400="Arial">h<f x12FFE100="Arial">a<f x12D2FF00="Arial">v<f x12A5FF00="Arial">e<f x1278FF00="Arial"> <f x124BFF00="Arial">d<f x121EFF00="Arial">e<f x1200FF2D="Arial">f<f x1200FF5A="Arial">i<f x1200FF87="Arial">n<f x1200FFB4="Arial">e<f x1200FFE1="Arial">d<f x1200D2FF="Arial"><b> '+str(len(arr))+'</b> words in your dictionary :<i> %s'% (', '.join(sorted(arr))), True)
+          else:
+            room.message("You havent defined anything to your dictionary.")
+
+
+         ###### Define            
+      elif cmd == "define" or cmd == "df":
+          try:
+            word, definition = args.split(" as ", 1)
+            word = word.lower()
+          except:
+            word = args.split()[0].lower()
+            definition = ""
+          if len(definition) > 0:
+            if word in dictionary:
+              room.message(user.name+", sorry but <b>%s</b> is already defined" % word, True)
+            else:
+              dictionary[word] = json.dumps([definition, user.name])
+              room.message("Brain setting to remember "+word+" "+ definition, True)
+          else:
+            if word in dictionary:
+              definition, name = json.loads(dictionary[word])
+              room.message(sntonick(name)+" defined "+word+" as "+definition , True)
+            else:
+              room.message("<b>%s</b> is not yet defined, do <b>=define %s as meaning</b> to define it!" % (args, args), True)
+
+      elif cmd == "inbox":
+          if user.name in sn:
+            mesg = len(sn[user.name])
+            room.message("["+str(mesg)+"] messages. To read your message, do *rn")
+          else:
+            sn.update({user.name:[]})
+            mesg = len(sn[user.name])
+            room.message("["+str(mesg)+"] messages. To read your message, do *rn")
+
+      elif cmd =="rn" or cmd =="readnote":
+          if user.name not in sn:
+            sn.update({user.name:[]})
+          user=user.name.lower()
+          if len(sn[user]) > 0:
+            messg = sn[user][0]
+            dari, pesen, timey = messg
+            timey = time.time() - int(timey)
+            minute = 60
+            hour = minute * 60
+            day = hour * 24
+            days =  int(timey / day)
+            hours = int((timey % day) / hour)
+            minutes = int((timey % hour) / minute)
+            seconds = int(timey % minute)
+            string = ""
+            if days > 0:
+              string += str(days) + " " + (days == 1 and "day" or "days" ) + ", "
+            if len(string) > 0 or hours > 0:
+              string += str(hours) + " " + (hours == 1 and "hour" or "hours" ) + ", "
+            if len(string) > 0 or minutes > 0:
+              string += str(minutes) + " " + (minutes == 1 and "minute" or "minutes" ) + ", "
+            string += str(seconds) + " " + (seconds == 1 and "second" or "seconds" )
+            room.message("Message from "+dari+" - "+pesen+" - "+string+" ago", True)
+            try:
+              del sn[user][0]
+              notif.remove(user)
+            except:pass
+          else:room.message('%s'%(user)+" you don't have any messages in your inbox" , True)
+         
+ 
+                   #### CurrentStats
+      if cmd == "cs" or cmd =="currentstats":
+        a = len(self.roomnames)
+        b = len(whitelist)
+        c = len(cowner)
+        d = len(staffa)
+        e = len(nicks)
+        f = len(definitions)
+        g = len(blacklist)
+        room.message("<br><br>Rooms: "+str(a)+"  <br>Whitelist: "+str(b)+" <br>Cowner: "+str(c)+" <br>staffa: "+str(d)+" <br>Nick: "+str(e)+" <br>Definitions: "+str(f)+" <br>Blacklist: "+str(g)+"",True)
+       ### Send Notes
+        #send notes
+      elif cmd == "sn" or cmd == "sendnote":
+          try:
+            args.lower()
+            untuk, pesan = args.split(" ", 1)
+            if untuk[0] == "+":
+                    untuk = untuk[1:]
+            else:
+                    if pars(untuk) == None:
+                      room.message("Who the fook is "+untuk+" ??")
+                      return
+                    untuk = pars(untuk)
+            if urank(untuk) < 1:
+              return
+            if untuk in sn:
+              sn[untuk].append([user.name, pesan, time.time()])
+              if untuk not in notif:
+                notif.append(untuk)
+              else:pass
+            else:
+              sn.update({untuk:[]})
+              sn[untuk].append([user.name, pesan, time.time()])
+              if untuk not in notif:
+                notif.append(untuk)
+              else:pass
+            room.message('Sent to %s'% (untuk)+"'s inbox" , True)
+          except:
+            room.message("Make sure you type it like this <font color='#FF0000'>'sn (<i>target</i>) (<i>your message</i>)",True)
+
+#Animeindo
+      elif cmd == "ai":
+        try:
+          data = animeindo.links(args)
+          room.message("Mirrors:<br/>%s" % (data),True)
+        except:
+          room.message("Sorry, something went wrong.")
+ 
+      elif cmd == "newai":
+        try:
+          data = animeindo.newupdate()
+          room.message("Newupdate on Animeindo.tv:<br/>%s" % (data),True)
+        except:
+          room.message("Sorry, something went wrong.")
+
+      elif cmd == "ban" or cmd == "Ban" or cmd == "Interzicere" or cmd == "interzicere":
+          if user.name in cowner:
+              name = args
+              if user.name in cowner:
+                room.message("Njet >_>")
+                return
+              if name in room.usernames:
+                room.banUser(ch.User(name))
+                room.message("<b>%s</b> is banned" % (name), True)
+                self.pm.message(ch.User(name.lower()), "You have been banned from %s by %s. Please behave lik a Punk!!" % (room.name, user.name))
+              else:
+                room.message("i don't see "+name+" here :|")
+          else:
+              room.message("You mere mortals can never do that !!")
+             
+      elif cmd == "unban" or cmd == "ub" or cmd == "UnBan" or cmd == "Unban" or cmd == "Scoate Interzicerea" or cmd == "Scoate interzicerea":
+          if user.name in cowner:
+              name = args
+              if user.name in cowner: return
+              room.unban(ch.User(name))
+              room.message("<b>%s</b> is unbanned" % (name), True)
+              self.pm.message(ch.User(name.lower()), "You have been unbanned from %s by %s. Please behave lik a Punk!!" % (room.name, user.name))
+          else:
+              room.message("You mere mortals can never do that !!")
+              #### Restart
+      elif cmd =="restart" or cmd == "Restart" or cmd == "Reconnect" or cmd == "reconnect":
+         if user.name.lower() in cowner:
+           room.reconnect()
+         else:
+           room.message("Ce ??? *lol*")
+
+          
+     #### Find
+      elif cmd == "find" or cmd == "Find":
+          name = args.split()[0].lower()
+          try:
+            if name in room.usernames:
+                    if not ch.User(name).roomnames:  room.message("dont see them. <_<")
+                    else: room.message("<f xFF0000='1'><b>%s</b><f x999900='1'>is curently in <f x3366FF='1'><b>%s</b> >_>" % (args, ", ".join(ch.User(name).roomnames)), True)
+          except: return
+          target = args[1:]
+          if args[0] == "+":
+                if not ch.User(target).roomnames:  room.message("dont see them. <_<")
+                else: room.message("<f xFF0000='1'><b>%s</b><f x000099='1'> is curently in <f x3366FF='1'><b>%s</b> >_>" % (args[1:], ", ".join(ch.User(target).roomnames)), True)
+          elif args == "true love" or args == "True Love" or args == "True love":
+            orang = random.choice(room.usernames)
+            room.message(random.choice([user.name+", You just found out that "+orang+" is your true love :o","I'm sorry "+user.name+" You didn't found your true love here :(",user.name+"'s true love is "+orang+", Have fun you godamn lovebirds !! ^^","Njet >_> ,, No love for you !","Shut up >_> ,, I love you since we first met !"]))
+
+ 
+      #### LoveMeter
+      elif cmd == "lm" or cmd == "lovemeter" and not user.name in blacklist and not room.name in deathroom:
+        try:
+          nama1, nama2 = args.split(" ", 1)
+          persen=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"]
+          hasil=random.choice(persen)
+          hasil=int(hasil)
+          if nama2 =="":room.message(user.name+"@ type ;lm (name1)<space>(name2)");return
+          if hasil == 0:
+            room.message(" Love Meter "+nama1+" with "+nama2+" = %s"% hasil+"% | Nothing! Jones forever :P")
+          if hasil < 50:
+            room.message(" Love Meter "+nama1+" with "+nama2+" = %s"% hasil+"% | Frindzoned!")
+          if hasil > 49 and hasil < 60:
+            room.message(user.name+"@ Love Meter "+nama1+" with "+nama2+" = %s"% hasil+"% | Good!")
+          if hasil > 59 and hasil < 100:
+             room.message(" Love Meter "+nama1+" with "+nama2+" = %s"% hasil+"% | I'm jealous *rolleyes*")
+          if hasil == 100 :
+            room.message(" Love Meter "+nama1+" with "+nama2+" = %s"% hasil+"% | Wohg Great! Unbelievable!")
+        except:room.message(" type =lm (name1)<space>(name2)")
+
+      elif cmd == "invitegroup" or cmd == "ig":
+        if len (args) > 0:
+         self.pm.message(ch.RoomManager(args),"%s You have group invite! check this Chatango Group http://%s.chatango.com ." %(room.ownername[0],room.name))
+         room.message("Youre invite %s now is in Accest Group. :)" % args)
+        else:
+          room.message("gak mau ah nginvite dia")
+ 
+
+        ##DANCE!!!!
+        #Dance ? Of Course !!! ^_^
+      elif cmd == "dance":
+        for i, msg in enumerate(dancemoves):
+          self.setTimeout(i / 2, room.message, msg)
+               #### Pm
+      elif cmd == "pm" or cmd == "Pm" or cmd == "PM" or cmd == "Private Message":
+        data = args.split(" ", 1)
+        if len(data) > 1:
+          name , args = data[0], data[1]
+          self.pm.message(ch.User(name), "[Private.Message] By - "+user.name+" : "+args+" ")
+          room.message("Has been sent to "+name+"")
+          ###Delete Messege
+        if (cmd == "delete" or cmd == "del"):
+          if room.getLevel(self.user) >= 1:
+            if room.getLevel(user) > 0:
+             if pars(args) == None:
+              args = args.lower()
+             if pars(args) != None:
+              args = pars(args)
+              room.clearUser(ch.User(args))
+            else:room.message("Just room owner or room moderators can do this!!..")
+          else:
+            room.message("I'm not a moderators or an owner here..")     
+
+        #### Invite
+      elif cmd == "invite" or cmd == "Invite":
+        if len (args) > 0:
+            self.pm.message(ch.RoomManager(args),"%s You have a group invite by ! http://%s.chatango.com ." %(owners[0],room.name))
+            room.message("Invite on progress %s in Access group. :)" % args)
+        else:
+            room.message("Sry have problem. :3")
+        #### Profile
+      elif cmd == "prof" or cmd == "profile" or cmd == "Prof" or cmd == "Profile":
+        try:
+          args=args.lower()
+          stuff=str(urlreq.urlopen("http://"+args+".chatango.com").read().decode("utf-8"))
+          crap, age = stuff.split('<span class="profile_text"><strong>Age:</strong></span></td><td><span class="profile_text">', 1)
+          age, crap = age.split('<br /></span>', 1)
+          crap, gender = stuff.split('<span class="profile_text"><strong>Gender:</strong></span></td><td><span class="profile_text">', 1)
+          gender, crap = gender.split(' <br /></span>', 1)
+          if gender == 'M':
+              gender = 'Male'
+          elif gender == 'F':
+              gender = 'Female'
+          else:
+              gender = '?'
+          crap, location = stuff.split('<span class="profile_text"><strong>Location:</strong></span></td><td><span class="profile_text">', 1)
+          location, crap = location.split(' <br /></span>', 1)
+          crap,mini=stuff.split("<span class=\"profile_text\"><!-- google_ad_section_start -->",1)
+          mini,crap=mini.split("<!-- google_ad_section_end --></span>",1)
+          mini=mini.replace("<img","<!")
+          picture = '<a href="http://fp.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/full.jpg" style="z-index:59" target="_blank">http://fp.chatango.com/profileimg/' + args[0] + '/' + args[1] + '/' + args + '/full.jpg</a>'
+          prodata = '<br/> <a href="http://chatango.com/fullpix?' + args + '" target="_blank">' + picture + '<br/><br/> Age: '+ age + ' <br/> Gender: ' + gender +  ' <br/> Location: ' +  location + '' '<br/> <a href="http://' + args + '.chatango.com" target="_blank"><u>Chat With User</u></a> ' "<br/><br/> "+ mini
+          room.message(prodata,True)
+        except:
+          room.message(""+args+" doesn't exist o.o ")
+        #
+        if cmd =="wordtoday" or cmd=="wt":
+            if user.name in cowner:
+              if user.name in wordtodaytime:
+                w = json.loads(wordtodaytime[user.name])
+                if time.time() < w:
+                  w = int(w) - int(time.time())
+                  minute = 60
+                  hour = minute * 60
+                  day = hour * 24
+                  days =  int(w / day)
+                  hours = int((w % day) / hour)
+                  minutes = int((w % hour) / minute)
+                  seconds = int(w % minute)
+                  string = ""
+                  if days > 0:
+                    string += str(days) + " " + (days == 1 and "day" or "days" ) + ", "
+                  if len(string) > 0 or hours > 0:
+                    string += str(hours) + " " + (hours == 1 and "hour" or "hours" ) + ", "
+                  if len(string) > 0 or minutes > 0:
+                    string += str(minutes) + " " + (minutes == 1 and "minute" or "minutes" ) + ", "
+                  string += str(seconds) + " " + (seconds == 1 and "second" or "seconds" )
+                  room.message("You can use wordtoday after <font color='#9999FF'>%s</font>  (~^o^)~ "% string,True)
+                  return
+              if urank(user.name) >= 1:
+                x=(random.choice(["sadness","happines","yaoi","yuri","horny","nice","bad","bastard","young","lazy","poor","rich","ugly","handshome","beautiful","good","gay","keep calm","arrogant","naughty","special","sweet","tits","areola","pupy","ass","sunny","dizzy","nude","old","lifeless","dying",'death',"impotent","cancer"]))
+                room.message("Dear "+sntonick(user.name)+" Your word today is : <b><font color='#FF9966'>"+str(x)+"</font></b>",True)
+                wordtodaytime[user.name] = json.dumps(time.time()+1200)
+ 
+        ##Check if Mod
+        #not really important
+      elif cmd == "ismod":
+        user = ch.User(args)
+        if room.getLevel(user) > 0:
+          room.message("yesh")
+        else:
+          room.message("nope")
+   except Exception as e:
+      try:
+        et, ev, tb = sys.exc_info()
+        lineno = tb.tb_lineno
+        fn = tb.tb_frame.f_code.co_filename
+        room.message("[Expectation Failed] %s Line %i - %s"% (fn, lineno, str(e)))
+        return
+      except:
+        room.message("Undescribeable error detected !!")
+        return
+ 
+  ##Other Crap here, Dont worry about it
+ 
+  def onFloodWarning(self, room):
+    room.reconnect()
+ 
+  def onJoin(self, room, user):
+   print(user.name + " joined the chat!")
+   
+  def onLeave(self, room, user):
+   print(user.name + " left the chat!")
+   
+  def onUserCountChange(self, room):
+    print("users: " + str(room.usercount))
+ 
+  def onMessageDelete(self, room, user, msg):
+    print("MESSAGE DELETED: " + user.name + ": " + msg.body)
+ 
+ 
+if __name__ == "__main__": TestBot.easy_start(rooms,"Alvionbot","alvion021371")
+ 
+    #The End!!
